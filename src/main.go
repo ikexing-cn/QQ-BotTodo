@@ -2,9 +2,12 @@ package main
 
 import (
 	"io/ioutil"
-
+	"strconv"
+	
 	"github.com/gin-gonic/gin"
 	"github.com/tidwall/gjson"
+	"todo-everyday/src/cron"
+	"todo-everyday/src/utils"
 )
 
 func main() {
@@ -13,6 +16,7 @@ func main() {
 		dataRender := context.Request.Body
 		rawData, _ := ioutil.ReadAll(dataRender)
 		json := string(rawData)
+		cron.Cron.Start()
 
 		postType := gjson.Get(json, "post_type").String()
 		if postType == "message" {
@@ -32,10 +36,15 @@ func MessageExec(json string, context *gin.Context) {
 	}
 
 	if message[0:1] == "/" {
-		result := CheckCommand(message[1:], context)
-		if result[0] != "skip" {
-			SendPrivateMsg(result[1], userID)
-			//Reply(context, result[1])
+		result := utils.CheckCommand(message[1:], context)
+		if result[0] == "skip" {
+			return
+		}
+		if result[0] == "todo" {
+			atoi, _ := strconv.Atoi(result[2])
+			if cron.AddFunc(result[1], result[3], userID, atoi) == -1 {
+				utils.Reply(context, "此ToDo已经存在于数据库，请勿重复添加")
+			}
 		}
 	}
 }

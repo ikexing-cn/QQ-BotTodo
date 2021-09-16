@@ -1,10 +1,11 @@
-package main
+package utils
 
 import (
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -26,21 +27,24 @@ const (
 )
 
 func CheckCommand(str string, context *gin.Context) []string {
-	split := strings.Split(str, " ")
+	splits := strings.Split(str, " ")
 
-	switch strings.ToLower(split[0]) {
+	switch strings.ToLower(splits[0]) {
 	case "todo":
-		if len(strings.Split(split[1], "/")) != 6 {
-			return errorCommand(context)
-		} else {
-			return []string{split[0], strings.Replace(split[1], "/", " ", -1), split[2]}
+		if len(splits) == 4 {
+			if len(strings.Split(splits[1], "/")) == 6 {
+				_, err := strconv.Atoi(splits[2])
+				if err != nil {
+					return skipCommand(context, "参数需为数字")
+				}
+				return []string{splits[0], strings.Replace(splits[1], "/", " ", -1), splits[2], splits[3]}
+			}
 		}
+		return errorCommand(context)
 	case "howtouse", "htu":
-		Reply(context, howtouse)
-		return []string{"skip"}
+		return skipCommand(context, howtouse)
 	case "char", "character":
-		Reply(context, char)
-		return []string{"skip"}
+		return skipCommand(context, char)
 	default:
 		return errorCommand(context)
 	}
@@ -54,6 +58,11 @@ func Reply(context *gin.Context, message string) {
 
 func SendPrivateMsg(message string, userID string) string {
 	return getRequest(map[string]string{"message": message, "user_id": userID}, "/send_private_msg")
+}
+
+func skipCommand(context *gin.Context, text string) []string {
+	Reply(context, text)
+	return []string{"skip"}
 }
 
 func errorCommand(context *gin.Context) []string {
@@ -79,4 +88,10 @@ func getRequest(params map[string]string, suffix string) string {
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
 	return string(body)
+}
+
+func CheckErr(err error) {
+	if err != nil {
+		panic(err)
+	}
 }
