@@ -2,7 +2,6 @@ package main
 
 import (
 	"io/ioutil"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/tidwall/gjson"
@@ -33,9 +32,9 @@ func MessageExec(json string, context *gin.Context) {
 	}
 
 	if message[0:1] == "/" {
-		command := CheckCommand(message[1:])
-		context.JSON(http.StatusOK, gin.H{
-			"reply": command[len(command)-1],
-		})
+		result := CheckCommand(message[1:], context)
+		if result[0] != "skip" {
+			Reply(context, result[1])
+		}
 	}
 }

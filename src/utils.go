@@ -1,58 +1,38 @@
 package main
 
 import (
+	"net/http"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
-type TodoType int32
+func CheckCommand(str string, context *gin.Context) []string {
+	split := strings.Split(str, " ")
 
-const (
-	Monday    TodoType = 0
-	Tuesday   TodoType = 1
-	Wednesday TodoType = 2
-	Thursday  TodoType = 3
-	Friday    TodoType = 4
-	Saturday  TodoType = 5
-	Sunday    TodoType = 6
-	EveryDay  TodoType = 7
-	Error     TodoType = -1
-)
-
-func getType(t string) TodoType {
-	switch strings.ToLower(t) {
-	case "everyday":
-		return EveryDay
-	case "monday":
-		return Monday
-	case "tuesday":
-		return Tuesday
-	case "wednesday":
-		return Wednesday
-	case "thursday":
-		return Thursday
-	case "friday":
-		return Friday
-	case "saturday":
-		return Saturday
-	case "sunday":
-		return Sunday
+	switch strings.ToLower(split[0]) {
+	case "todo":
+		if len(strings.Split(split[1], "/")) != 6 {
+			return errorCommand(context)
+		} else {
+			return []string{split[0], strings.Replace(split[1], "/", " ", -1), split[2]}
+		}
+	case "howtouse", "htu":
+		Reply(context, "格式: 秒/分钟/小时/天/月份/星期 \r\n例子: 20/10/*/*/*/6 \r\n"+
+			"#表示：星期六的每个小时的第10分钟的第20秒提醒")
+		return []string{"skip"}
 	default:
-		return Error
+		return errorCommand(context)
 	}
 }
 
-func CheckCommand(str string) []string {
-	split := strings.Split(str, " ")
+func Reply(context *gin.Context, message string) {
+	context.JSON(http.StatusOK, gin.H{
+		"reply": message,
+	})
+}
 
-	if split[0] == "todo" {
-		if getType(split[1]) == Error {
-			return []string{"不存在此日期"}
-		}
-		if !strings.Contains(split[2], ":") {
-			return []string{"时间不正确"}
-		}
-	} else {
-		return []string{"错误的指令"}
-	}
-	return []string{split[1], split[2], split[3]}
+func errorCommand(context *gin.Context) []string {
+	Reply(context, "错误的指令")
+	return []string{"skip"}
 }
