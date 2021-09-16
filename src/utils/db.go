@@ -2,11 +2,11 @@ package utils
 
 import (
 	"database/sql"
-
+	
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var db, _ = sql.Open("sqlite3", "../../sql.db")
+var db *sql.DB
 
 type SqlCron struct {
 	UserID     int
@@ -14,6 +14,12 @@ type SqlCron struct {
 	EntityID   int
 	Expression string
 	Message    string
+}
+
+func DBInit() {
+	var DBError error
+	db, DBError = sql.Open("sqlite3", "./sql.db")
+	CheckErr(DBError)
 }
 
 func DBInsert(sqlCron SqlCron) {
@@ -29,7 +35,7 @@ func DBQuery(sql string) []SqlCron {
 	rows, _ := db.Query(sql)
 	for rows.Next() {
 		sqlCron := new(SqlCron)
-		err := rows.Scan(&sqlCron)
+		err := rows.Scan(&sqlCron.UserID, &sqlCron.Count, &sqlCron.EntityID, &sqlCron.Expression, &sqlCron.Message)
 		sqlCrons = append(sqlCrons, *sqlCron)
 		CheckErr(err)
 	}

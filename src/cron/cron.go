@@ -10,7 +10,7 @@ import (
 var Cron = cron.New(cron.WithSeconds())
 
 func AddFunc(exps string, message string, userID string, count int) int {
-	sql := "SELECT * FROM cron WHERE message = " + exps + " AND user_id = " + userID + " AND expression = " + exps
+	sql := "SELECT * FROM cron WHERE message = '" + message + "' AND user_id = '" + userID + "' AND expression = '" + exps + "'"
 	query := utils.DBQuery(sql)
 	if len(query) == 0 {
 		entryID, _ := Cron.AddFunc(exps, func() {

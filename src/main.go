@@ -3,7 +3,7 @@ package main
 import (
 	"io/ioutil"
 	"strconv"
-	
+
 	"github.com/gin-gonic/gin"
 	"github.com/tidwall/gjson"
 	"todo-everyday/src/cron"
@@ -17,7 +17,7 @@ func main() {
 		rawData, _ := ioutil.ReadAll(dataRender)
 		json := string(rawData)
 		cron.Cron.Start()
-
+		utils.DBInit()
 		postType := gjson.Get(json, "post_type").String()
 		if postType == "message" {
 			MessageExec(json, context)
