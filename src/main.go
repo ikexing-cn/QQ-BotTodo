@@ -23,7 +23,7 @@ func main() {
 }
 
 func MessageExec(json string, context *gin.Context) {
-	//userID := gjson.Get(json, "user_id").String()
+	userID := gjson.Get(json, "user_id").String()
 	subType := gjson.Get(json, "sub_type").String()
 	message := gjson.Get(json, "message").String()
 
@@ -34,7 +34,8 @@ func MessageExec(json string, context *gin.Context) {
 	if message[0:1] == "/" {
 		result := CheckCommand(message[1:], context)
 		if result[0] != "skip" {
-			Reply(context, result[1])
+			SendPrivateMsg(result[1], userID)
+			//Reply(context, result[1])
 		}
 	}
 }

@@ -1,11 +1,14 @@
 package main
 
 import (
+	"io/ioutil"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 )
+
+const address = "http://127.0.0.1:5700"
 
 func CheckCommand(str string, context *gin.Context) []string {
 	split := strings.Split(str, " ")
@@ -30,6 +33,14 @@ func Reply(context *gin.Context, message string) {
 	context.JSON(http.StatusOK, gin.H{
 		"reply": message,
 	})
+}
+
+func SendPrivateMsg(message string, userID string) string {
+	url := address + "/send_private_msg?user_id=" + userID + "&message=" + message
+	res, _ := http.Get(url)
+	defer res.Body.Close()
+	body, _ := ioutil.ReadAll(res.Body)
+	return string(body)
 }
 
 func errorCommand(context *gin.Context) []string {
