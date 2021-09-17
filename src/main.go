@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"strconv"
 
@@ -30,8 +29,7 @@ func Init() {
 	tools.DBInit()
 	sqlCrons := tools.DBQuery("SELECT * FROM cron")
 	for _, cron_ := range sqlCrons {
-		addFunc := tools.CronAddFunc(cron_.Expression, cron_.Message, strconv.Itoa(cron_.UserID), cron_.Count, false)
-		fmt.Println(addFunc)
+		tools.CronAddFunc(cron_.Expression, cron_.Message, strconv.Itoa(cron_.UserID), cron_.Count, false)
 	}
 }
 
