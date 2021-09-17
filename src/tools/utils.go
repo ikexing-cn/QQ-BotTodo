@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -31,17 +30,12 @@ func CheckCommand(str string, context *gin.Context) []string {
 
 	switch strings.ToLower(splits[0]) {
 	case "todo":
-		if len(splits) == 4 {
-			if len(strings.Split(splits[1], "/")) == 6 {
-				_, err := strconv.Atoi(splits[2])
-				if err != nil {
-					return skipCommand(context, "参数需为数字")
-				}
-				return []string{splits[0], strings.Replace(splits[1], "/", " ", -1), splits[2], splits[3]}
-			}
-		}
-		return errorCommand(context)
-	case "howtouse", "htu":
+		return todo(context, splits)
+	case "list":
+		return list(context)
+	case "remove", "delete", "del":
+		return remove(context, splits)
+	case "howtouse", "htu", "help":
 		return skipCommand(context, howtouse)
 	case "char", "character":
 		return skipCommand(context, char)

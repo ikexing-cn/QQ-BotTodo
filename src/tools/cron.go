@@ -8,8 +8,12 @@ import (
 
 var Cron = cron.New(cron.WithSeconds())
 
-func CronRemoveFunc(entityID int) {
-	Cron.Remove(cron.EntryID(entityID))
+func CronInit() {
+	Cron.Start()
+	sqlCrons := DBQuery("select * from cron order by entry_id")
+	for _, cron_ := range sqlCrons {
+		CronAddFunc(cron_.Expression, cron_.Message, strconv.Itoa(cron_.UserID), cron_.Count, false)
+	}
 }
 
 func CronAddFunc_(exps string, message string, userID string, count int) int {
@@ -29,7 +33,7 @@ func CronAddFunc(exps string, message string, userID string, count int, isFirst 
 			DBInsert(SqlCron{
 				UserID:     intID,
 				Count:      count,
-				EntityID:   int(entryID),
+				EntryID:    int(entryID),
 				Expression: exps,
 				Message:    message})
 			SendPrivateMsg("数据已添加", userID)

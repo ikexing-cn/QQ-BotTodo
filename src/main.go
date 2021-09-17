@@ -25,12 +25,9 @@ func main() {
 }
 
 func Init() {
-	tools.Cron.Start()
 	tools.DBInit()
-	sqlCrons := tools.DBQuery("SELECT * FROM cron")
-	for _, cron_ := range sqlCrons {
-		tools.CronAddFunc(cron_.Expression, cron_.Message, strconv.Itoa(cron_.UserID), cron_.Count, false)
-	}
+	tools.DBOrderByEntryID()
+	tools.CronInit()
 }
 
 func MessageExec(json string, context *gin.Context) {
