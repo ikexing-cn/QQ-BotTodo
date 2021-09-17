@@ -1,29 +1,38 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/tidwall/gjson"
-	"todo-everyday/src/cron"
-	"todo-everyday/src/utils"
+	"todo-everyday/src/tools"
 )
 
 func main() {
+	Init()
 	r := gin.Default()
 	r.POST("/", func(context *gin.Context) {
 		dataRender := context.Request.Body
 		rawData, _ := ioutil.ReadAll(dataRender)
 		json := string(rawData)
-		cron.Cron.Start()
-		utils.DBInit()
 		postType := gjson.Get(json, "post_type").String()
 		if postType == "message" {
 			MessageExec(json, context)
 		}
 	})
 	_ = r.Run(":5701")
+}
+
+func Init() {
+	tools.Cron.Start()
+	tools.DBInit()
+	sqlCrons := tools.DBQuery("SELECT * FROM cron")
+	for _, cron_ := range sqlCrons {
+		addFunc := tools.CronAddFunc(cron_.Expression, cron_.Message, strconv.Itoa(cron_.UserID), cron_.Count, false)
+		fmt.Println(addFunc)
+	}
 }
 
 func MessageExec(json string, context *gin.Context) {
@@ -36,14 +45,14 @@ func MessageExec(json string, context *gin.Context) {
 	}
 
 	if message[0:1] == "/" {
-		result := utils.CheckCommand(message[1:], context)
+		result := tools.CheckCommand(message[1:], context)
 		if result[0] == "skip" {
 			return
 		}
 		if result[0] == "todo" {
 			atoi, _ := strconv.Atoi(result[2])
-			if cron.AddFunc(result[1], result[3], userID, atoi) == -1 {
-				utils.Reply(context, "此ToDo已经存在于数据库，请勿重复添加")
+			if tools.CronAddFunc_(result[1], result[3], userID, atoi) == -1 {
+				tools.Reply(context, "此ToDo已经存在于数据库，请勿重复添加")
 			}
 		}
 	}
