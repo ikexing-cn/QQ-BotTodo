@@ -38,6 +38,7 @@ func remove(context *gin.Context, splits []string) []string {
 		sqlCrons := DBQuery("select * from cron where entry_id = " + splits[1])
 		if len(sqlCrons) != 0 {
 			DBDelete(splits[1])
+			CronRemove(splits[1])
 			return skipCommand(context, "执行成功")
 		}
 		return skipCommand(context, "ID不正确")

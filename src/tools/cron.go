@@ -16,6 +16,12 @@ func CronInit() {
 	}
 }
 
+func CronRemove(entryID string) {
+	atoi, err := strconv.Atoi(entryID)
+	CheckErr(err)
+	Cron.Remove(cron.EntryID(atoi))
+}
+
 func CronAddFunc_(exps string, message string, userID string, count int) int {
 	return CronAddFunc(exps, message, userID, count, true)
 }
